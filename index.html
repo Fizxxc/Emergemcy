@@ -81,7 +81,7 @@
         document.getElementById('emergencyBtn').addEventListener('click', function () {
             Swal.fire({
                 title: 'Are you sure?',
-                text: "This will notify the admin immediately.",
+                text: "This will notify the admin immediately along with your location.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -89,38 +89,55 @@
                 confirmButtonText: 'Yes, notify admin!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch('https://formspree.io/f/your_form_id', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            message: 'Emergency button pressed! Immediate assistance required.',
-                            timestamp: new Date().toISOString()
-                        })
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            Swal.fire(
-                                'Notified!',
-                                'Admin has been notified successfully.',
-                                'success'
-                            );
-                        } else {
-                            Swal.fire(
-                                'Error!',
-                                'Failed to notify admin. Please try again.',
-                                'error'
-                            );
-                        }
-                    })
-                    .catch(() => {
+                    // Get the user's location
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            var lat = position.coords.latitude;
+                            var lon = position.coords.longitude;
+
+                            // Send the emergency notification with location
+                            fetch('https://formspree.io/f/xlddbyej', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    message: 'Emergency button pressed! Immediate assistance required.',
+                                    latitude: lat,
+                                    longitude: lon,
+                                    timestamp: new Date().toISOString()
+                                })
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    Swal.fire(
+                                        'Notified!',
+                                        'Admin has been notified successfully.',
+                                        'success'
+                                    );
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        'Failed to notify admin. Please try again.',
+                                        'error'
+                                    );
+                                }
+                            })
+                            .catch(() => {
+                                Swal.fire(
+                                    'Error!',
+                                    'An error occurred. Please check your connection.',
+                                    'error'
+                                );
+                            });
+                        });
+                    } else {
                         Swal.fire(
                             'Error!',
-                            'An error occurred. Please check your connection.',
+                            'Geolocation is not supported by this browser.',
                             'error'
                         );
-                    });
+                    }
                 }
             });
         });
@@ -179,3 +196,4 @@
         });
     </script>
 </body>
+</html>
